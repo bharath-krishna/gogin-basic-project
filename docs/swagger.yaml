@@ -1,0 +1,56 @@
+definitions:
+  main.Welcome:
+    properties:
+      id:
+        example: "1"
+        format: int64
+        type: string
+    type: object
+  main.Welcome2:
+    properties:
+      name:
+        example: somename
+        format: string
+        type: string
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /welcome:
+    get:
+      consumes:
+      - application/json
+      description: This is the welcome page
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Welcome'
+      summary: welcome page
+      tags:
+      - welcome
+  /welcome2:
+    post:
+      consumes:
+      - application/json
+      description: This is the welcome2 page
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.Welcome2'
+      summary: welcome2 page
+      tags:
+      - welcome2
+swagger: "2.0"

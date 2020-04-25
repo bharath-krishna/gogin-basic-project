@@ -1,0 +1,85 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {},
+        "license": {}
+    },
+    "paths": {
+        "/welcome": {
+            "get": {
+                "description": "This is the welcome page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "application/json"
+                ],
+                "tags": [
+                    "welcome"
+                ],
+                "summary": "welcome page",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.Welcome"
+                        }
+                    }
+                }
+            }
+        },
+        "/welcome2": {
+            "post": {
+                "description": "This is the welcome2 page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/plain"
+                ],
+                "tags": [
+                    "welcome2"
+                ],
+                "summary": "welcome2 page",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.Welcome2"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.Welcome": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "format": "int64",
+                    "example": "1"
+                }
+            }
+        },
+        "main.Welcome2": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "format": "string",
+                    "example": "somename"
+                }
+            }
+        }
+    }
+}
