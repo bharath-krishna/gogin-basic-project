@@ -9,8 +9,7 @@ import (
 
 type Config struct {
 	ServerAddr string `name:"addr" usage:"IP address and port to listen on" env:"ADDRESS"`
-	someconfig string `name:"someconfig" usage:"somecpnfig" env:"someconfig"`
-	newconfig  string `name:"newconfig" usage:"newconfig" env:"newconfig"`
+	DgraphHost string `name:"dgraphhost" usage:"IP address and port of dgraph" env:"DGRAPH_HOST"`
 	Verbose    bool   `name:"verbose" usage:"switch on debug / verbose logging"`
 }
 
@@ -18,6 +17,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		ServerAddr: "localhost:8088",
+		DgraphHost: "localhost:9080",
 	}
 }
 

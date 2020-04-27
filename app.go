@@ -30,10 +30,6 @@ func newApp() *cli.App {
 		server.Run()
 
 		defer server.logger.Sync()
-		// if err := server.Run(); err != nil {
-		// 	return cli.NewExitError(err.Error(), 1)
-
-		// }
 
 		// Setup the termination signals
 		signalChannel := make(chan os.Signal)

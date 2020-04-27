@@ -6,9 +6,10 @@ import (
 )
 
 type Server struct {
-	config *Config
-	app    *gin.Engine
-	logger *zap.Logger
+	gclient *Client
+	config  *Config
+	app     *gin.Engine
+	logger  *zap.Logger
 }
 
 func createNewServer(config *Config) (*Server, error) {
@@ -19,9 +20,14 @@ func createNewServer(config *Config) (*Server, error) {
 
 	logger.Info("Starting the service", zap.String("prog", prog), zap.String("version", version))
 
+	gclient, err := getNewGraphClient(logger, config)
+	if err != nil {
+		return nil, err
+	}
 	s := &Server{
-		logger: logger,
-		config: config,
+		gclient: gclient,
+		logger:  logger,
+		config:  config,
 	}
 
 	s.app = s.setupRoutes()
