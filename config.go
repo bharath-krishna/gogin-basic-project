@@ -17,7 +17,7 @@ type Config struct {
 // NewDefaultConfig create default configs
 func NewDefaultConfig() *Config {
 	return &Config{
-		ServerAddr: ":8080",
+		ServerAddr: "localhost:8088",
 	}
 }
 
