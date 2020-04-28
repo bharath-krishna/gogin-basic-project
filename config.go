@@ -4,13 +4,18 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/coreos/go-oidc"
 	"github.com/urfave/cli"
 )
 
 type Config struct {
-	ServerAddr string `name:"addr" usage:"IP address and port to listen on" env:"ADDRESS"`
-	DgraphHost string `name:"dgraphhost" usage:"IP address and port of dgraph" env:"DGRAPH_HOST"`
-	Verbose    bool   `name:"verbose" usage:"switch on debug / verbose logging"`
+	ServerAddr   string         `name:"addr" usage:"IP address and port to listen on" env:"ADDRESS"`
+	DgraphHost   string         `name:"dgraphhost" usage:"IP address and port of dgraph" env:"DGRAPH_HOST"`
+	AuthHost     string         `name:"authhost" usage:"IP address and port of auth host" env:"AUTH_HOST"`
+	ClientID     string         `name:"client_id" usage:"Client ID" env:"CLIENT_ID"`
+	ClientSecret string         `name:"client_secret" usage:"Client Secret" env:"CLIENT_SECRET"`
+	provider     *oidc.Provider `name:"provider" usage:"OIDC Provider"`
+	Verbose      bool           `name:"verbose" usage:"switch on debug / verbose logging"`
 }
 
 // NewDefaultConfig create default configs
@@ -18,6 +23,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		ServerAddr: "localhost:8088",
 		DgraphHost: "localhost:9080",
+		AuthHost:   "http://localhost:8099",
 	}
 }
 
