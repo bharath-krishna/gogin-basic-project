@@ -31,7 +31,7 @@ type Client struct {
 	config *Config
 }
 
-func getNewGraphClient(logger *zap.Logger, config *Config) (*Client, error) {
+func GetNewGraphClient(logger *zap.Logger, config *Config) (*Client, error) {
 	var clients []api.DgraphClient
 	for _, d := range strings.Split(config.DgraphHost, ",") {
 		conn, err := grpc.Dial(d, grpc.WithInsecure())

@@ -27,7 +27,7 @@ func newApp() *cli.App {
 			return err
 		}
 
-		server.Run()
+		go server.Run()
 
 		defer server.logger.Sync()
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/coreos/go-oidc"
@@ -9,21 +10,24 @@ import (
 )
 
 type Config struct {
-	ServerAddr   string         `name:"addr" usage:"IP address and port to listen on" env:"ADDRESS"`
-	DgraphHost   string         `name:"dgraphhost" usage:"IP address and port of dgraph" env:"DGRAPH_HOST"`
-	AuthHost     string         `name:"authhost" usage:"IP address and port of auth host" env:"AUTH_HOST"`
-	ClientID     string         `name:"client_id" usage:"Client ID" env:"CLIENT_ID"`
-	ClientSecret string         `name:"client_secret" usage:"Client Secret" env:"CLIENT_SECRET"`
-	provider     *oidc.Provider `name:"provider" usage:"OIDC Provider"`
-	Verbose      bool           `name:"verbose" usage:"switch on debug / verbose logging"`
+	ServerAddr    string         `name:"addr" usage:"IP address and port to listen on" env:"ADDRESS"`
+	DgraphHost    string         `name:"dgraphhost" usage:"IP address and port of dgraph" env:"DGRAPH_HOST"`
+	AuthHost      string         `name:"authhost" usage:"IP address and port of auth host" env:"AUTH_HOST"`
+	KeycloakRealm string         `name:"keycloak-realm" usage:"Keycloak realm used to authenticate to the oauth service" env:"KEYCLOAK_REALM"`
+	ClientID      string         `name:"client_id" usage:"Client ID" env:"CLIENT_ID"`
+	ClientSecret  string         `name:"client_secret" usage:"Client Secret" env:"CLIENT_SECRET"`
+	Provider      *oidc.Provider `json:"provider" usage:"OIDC Provider"`
+	Verbose       bool           `name:"verbose" usage:"switch on debug / verbose logging"`
 }
 
-// NewDefaultConfig create default configs
 func NewDefaultConfig() *Config {
 	return &Config{
-		ServerAddr: "localhost:8088",
-		DgraphHost: "localhost:9080",
-		AuthHost:   "http://localhost:8099",
+		ServerAddr:    os.Getenv("ADDRESS"),
+		KeycloakRealm: os.Getenv("KEYCLOAK_REALM"),
+		ClientID:      os.Getenv("CLIENT_ID"),
+		ClientSecret:  os.Getenv("CLIENT_SECRET"),
+		AuthHost:      os.Getenv("AUTH_HOST"),
+		DgraphHost:    os.Getenv("DGRAPH_HOST"),
 	}
 }
 
