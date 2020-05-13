@@ -3,9 +3,26 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 
 	"github.com/dgraph-io/dgo/v2/protos/api"
 )
+
+type Person struct {
+	Name      string    `json:"name"`
+	ID        string    `json:"id,omitempty"`
+	Father    *Person   `json:"father,omitempty"`
+	Mother    *Person   `json:"mother,omitempty"`
+	Sons      []*Person `json:"sons,omitempty"`
+	Wife      []*Person `json:"wife,omitempty"`
+	Husband   []*Person `json:"husband,omitempty"`
+	Daughters []*Person `json:"daughters,omitempty"`
+	Gender    string    `json:"gender,omitempty"`
+	Deleted   bool      `json:"deleted,omitempty"`
+	Deceased  bool      `json:"deceased,omitempty"`
+	DType     []string  `json:"dgraph.type,omitempty"`
+}
 
 var (
 	SEARCH_CREATE_QUERY = `upsert {
@@ -30,10 +47,15 @@ var (
 
 	SEARCH_QUERY_BY_NAME = `{
 		person(func: eq(name, "%s")) {
-		  uid
+		  id: uid
 		  name
-		  partner {
-			  uid
+		  wife {
+			  id: uid 
+			  name
+			  gender
+		  }
+		  husband {
+			  id: uid 
 			  name
 			  gender
 		  }
@@ -48,44 +70,27 @@ var (
 		  gender
 		}
 	  }`
-	SEARCH_QUERY_BY_UID = `{
-		person(func: uid("%s")) {
-		  uid
+	SEARCH_QUERY_BY_ID = `{
+		person(func: uid(%s)) {
+		  id: uid
 		  name
-		  partner {
-			  uid
+		  wife {
+			  id: uid
+			  name
+			  gender
+		  }
+		  husband {
+			  id: uid
 			  name
 			  gender
 		  }
 		  father {
-			  uid
+			  id: uid
 			  name
 			  gender
 		  }
 		  mother {
-			  uid
-			  name
-			  gender
-		  }
-		  gender
-		}
-	  }`
-	DELETE_QUERY_BY_UID = `{
-		person(func: uid("%s")) {
-		  uid
-		  name
-		  partner {
-			  uid
-			  name
-			  gender
-		  }
-		  father {
-			  uid
-			  name
-			  gender
-		  }
-		  mother {
-			  uid
+			  id: uid
 			  name
 			  gender
 		  }
@@ -94,30 +99,30 @@ var (
 	  }`
 	QUERY_CHILDREN = `{
 		person(func: uid(%s)) {
-			uid
+			id: uid
 			name
-			sons: ~father @filter(eq(gender, "male")) {
-				uid
+			sons: ~%s @filter(eq(gender, "male")) {
+				id: uid
 				name
 			}
-			daughters: ~father @filter(eq(gender, "female")) {
-				uid
+			daughters: ~%s @filter(eq(gender, "female")) {
+				id: uid
 				name
 			}
 		}
 	}`
-	QUERY_PARTNERS = `{
+	QUERY_HUSBAND_OR_WIFE = `{
 		person(func: uid(%s)) {
-			uid
+			id: uid
 			name
 			gender
-			wife: partner {
-				uid
+			wife {
+				id: uid
 				name
 				gender
 			}
-			husband: ~partner {
-				uid
+			husband {
+				id: uid
 				name
 				gender
 			}
@@ -125,11 +130,11 @@ var (
 	}`
 	QUERY_FATHER = `{
 		person(func: uid(%s)) {
-			uid
+			id: uid
 			name
 			gender
 			father {
-				uid
+				id: uid
 				name
 				gender
 			}
@@ -137,11 +142,11 @@ var (
 	}`
 	QUERY_MOTHER = `{
 		person(func: uid(%s)) {
-			uid
+			id: uid
 			name
 			gender
 			mother {
-				uid
+				id: uid
 				name
 				gender
 			}
@@ -149,7 +154,7 @@ var (
 	}`
 	QUERY_ALL = `{
 		person(func: has(name)) @recurse(depth: 2, loop: true) {
-			uid
+			id: uid
 			expand(_all_)
 		}
 	}`
@@ -170,30 +175,75 @@ var (
 			target: uid
 		  }
 		}
-		partners(func: has(name)) @cascade @normalize {
+		wife(func: has(name)) @cascade @normalize {
 		  source: uid
-		  partner {
+		  husband {
 			target: uid
 		  }
 		}
-	}`
+		husband(func: has(name)) @cascade @normalize {
+			source: uid
+			wife {
+			  target: uid
+			}
+		  }
+	  }`
+	QUERY_PERSON_NETWORK_FORMAT = `{
+		nodes(func: has(name)) @filter(uid_in(~father, %s) OR uid_in(father, %s) OR uid_in(mother, %s) OR uid_in(~wife, %s) OR uid_in(~mother, %s) OR uid_in(~husband, %s) OR uid(%s)) {
+		  id: uid
+          name
+          gender
+		}
+		fathers(func: uid(%s)) @cascade @normalize {
+		  source: uid
+		  father {
+		  target: uid
+		  }
+		}
+		mothers(func: uid(%s)) @cascade @normalize {
+		  source: uid
+		  mother {
+		    target: uid
+		  }
+		}
+		wife(func: uid(%s)) @cascade @normalize {
+		  source: uid
+		  husband {
+		    target: uid
+		  }
+		}
+		husband(func: uid(%s)) @cascade @normalize {
+		  source: uid
+		  wife {
+			target: uid
+		  }
+		}
+		fsons(func: uid(%s)) @cascade @normalize {
+          source: uid
+          ~father @filter(eq(gender, "male")) {
+            target: uid
+          }
+        }
+		msons(func: uid(%s)) @cascade @normalize {
+            source: uid
+            ~mother @filter(eq(gender, "male")) {
+              target: uid
+            }
+          }
+          fdaughters(func: uid(%s)) @cascade @normalize {
+            source: uid
+            ~father @filter(eq(gender, "female")) {
+              target: uid
+            }
+          }
+          mdaughters(func: uid(%s)) @cascade @normalize {
+            source: uid
+            ~mother @filter(eq(gender, "female")) {
+              target: uid
+            }
+          }
+        }`
 )
-
-type Person struct {
-	Name      string    `json:"name"`
-	UID       string    `json:"uid,omitempty"`
-	Partner   []*Person `json:"partner,omitempty"`
-	Father    *Person   `json:"father,omitempty"`
-	Mother    *Person   `json:"mother,omitempty"`
-	Sons      []*Person `json:"sons,omitempty"`
-	Wife      []*Person `json:"wife,omitempty"`
-	Husband   []*Person `json:"husband,omitempty"`
-	Daughters []*Person `json:"daughters,omitempty"`
-	Gender    string    `json:"gender,omitempty"`
-	Deleted   bool      `json:"deleted,omitempty"`
-	Deceased  bool      `json:"deceased,omitempty"`
-	DType     []string  `json:"dgraph.type,omitempty"`
-}
 
 func (c *Client) CreatePerson(p *Person) error {
 	p.DType = []string{"Person"}
@@ -214,6 +264,72 @@ func (c *Client) CreatePerson(p *Person) error {
 	if err != nil {
 		c.logger.Fatal(err.Error())
 	}
+	return nil
+}
+
+func (c *Client) DeletePerson(id string) error {
+	p := &Person{}
+	p.ID = id
+	p.DType = []string{"Person"}
+	ctx := context.Background()
+	txn := c.dgraph.NewTxn()
+	defer txn.Discard(ctx)
+
+	// Upsert query
+	// upsert {
+	// 	query {
+	// 	  p as node(func: id(0x7566)){
+	// 		h as ~husband
+	// 		w as ~wife
+	// 		f as ~father
+	// 		m as ~mother
+	// 	  }
+	// 	}
+
+	// 	mutation {
+	// 	  delete {
+	// 		uid(h) <husband> uid(p) .
+	// 		uid(w) <wife> uid(p) .
+	// 		uid(f) <father> uid(p) .
+	// 		uid(m) <mother> uid(p) .
+	// 		uid(p) * * .
+	// 	  }
+	// 	}
+	//   }
+
+	query := fmt.Sprintf(`query {
+		person as node(func: uid(%s)){
+			h as ~husband
+			w as ~wife
+			f as ~father
+			m as ~mother	  
+		}
+	}`, id)
+
+	mu := &api.Mutation{
+		DelNquads: []byte(`
+		uid(h) <husband> uid(person) .
+		uid(w) <wife> uid(person) .
+		uid(f) <father> uid(person) .
+		uid(m) <mother> uid(person) .
+		uid(person) <name> * .
+		uid(person) <gender> * .
+		uid(person) <father> * .
+		uid(person) <mother> * .
+		uid(person) * * .
+		  `),
+	}
+	req := &api.Request{
+		Query:     query,
+		Mutations: []*api.Mutation{mu},
+		CommitNow: true,
+	}
+
+	// Update email only if matching uid found.
+	if _, err := c.dgraph.NewTxn().Do(ctx, req); err != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 }
 
@@ -280,3 +396,36 @@ func (c *Client) UpdatePerson(p *Person) error {
 	}
 	return nil
 }
+
+// func (c *Client) UpdatePartners(p *Person) error {
+// 	p.DType = []string{"Person"}
+// 	query := fmt.Sprintf(SEARCH_QUERY_BY_UID, p.UID)
+// 	person, err := c.SearchPerson(query)
+// 	if err != nil {
+// 		c.logger.Fatal(err.Error())
+// 		return (err)
+// 	}
+// 	p.Gender = person[0].Gender
+// 	p.Name = person[0].Name
+// 	if person[0].Gender == "male" {
+// 		p.Partner = person[0].Wife
+// 	}
+// 	ctx := context.Background()
+// 	txn := c.dgraph.NewTxn()
+// 	defer txn.Discard(ctx)
+
+// 	pb, err := json.Marshal(p)
+// 	if err != nil {
+// 		c.logger.Fatal(err.Error())
+// 	}
+
+// 	mu := &api.Mutation{
+// 		SetJson:   pb,
+// 		CommitNow: true,
+// 	}
+// 	_, err = txn.Mutate(ctx, mu)
+// 	if err != nil {
+// 		c.logger.Fatal(err.Error())
+// 	}
+// 	return nil
+// }

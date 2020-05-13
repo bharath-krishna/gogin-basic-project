@@ -9,28 +9,16 @@ import (
 
 // GetPerson godoc
 // @Summary GetPerson
-// @Description Get details of a person like father, mother and partners via uid
+// @Description Get details of a person like father, mother and partners via id
 // @Tags Person
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{uid}/ [get]
-// @Param uid path string true "uid"
+// @Router /{id}/ [get]
+// @Param id path string true "id"
 func (s *Server) GetPerson(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(SEARCH_QUERY_BY_UID, person.UID)
-
-	people, err := s.gclient.SearchPerson(query)
-	if err != nil {
-		s.logger.Fatal(err.Error())
-		c.AbortWithStatus(http.StatusBadRequest)
-	}
-	c.JSON(http.StatusOK, people[0])
-}
-
-func (s *Server) DeletePerson(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(SEARCH_QUERY_BY_UID, person.UID)
+	person := &Person{ID: c.Param("id")}
+	query := fmt.Sprintf(SEARCH_QUERY_BY_ID, person.ID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -42,90 +30,118 @@ func (s *Server) DeletePerson(c *gin.Context) {
 
 // GetChildren godoc
 // @Summary GetChildren
-// @Description Get children's details of a person via uid (only immediage children are fetched)
+// @Description Get children's details of a person via id (only immediage children are fetched)
 // @Tags Person
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{uid}/children/ [get]
-// @Param uid path string true "uid"
+// @Router /{id}/children/ [get]
+// @Param id path string true "id"
 func (s *Server) GetChildren(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(QUERY_CHILDREN, person.UID)
+	person := &Person{ID: c.Param("id")}
+
+	personQuery := fmt.Sprintf(SEARCH_QUERY_BY_ID, person.ID)
+
+	querPerson, err := s.gclient.SearchPerson(personQuery)
+	if err != nil {
+		s.logger.Fatal(err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+
+	parent := ""
+	if querPerson[0].Gender == "female" {
+		parent = "mother"
+	} else {
+		parent = "father"
+	}
+
+	query := fmt.Sprintf(QUERY_CHILDREN, person.ID, parent, parent)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
 		s.logger.Fatal(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	if len(people) > 0 {
-		c.JSON(http.StatusOK, people[0])
+	if len(people) == 1 {
+		c.JSON(http.StatusOK, gin.H{"sons": people[0].Sons, "daughters": people[0].Daughters})
 	} else {
-		c.JSON(http.StatusOK, people)
+		children := []map[string][]*Person{}
+		for _, child := range people {
+			children = append(children, map[string][]*Person{"sons": child.Sons, "daughters": child.Daughters})
+		}
+		c.JSON(http.StatusOK, children)
 	}
 }
 
-func (s *Server) GetPartners(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(QUERY_PARTNERS, person.UID)
+func (s *Server) GetHusband(c *gin.Context) {
+	person := &Person{ID: c.Param("id")}
+	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.ID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
 		s.logger.Fatal(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	if len(people) > 0 {
-		c.JSON(http.StatusOK, people[0])
-	} else {
-		c.JSON(http.StatusOK, people)
+	if people[0].Gender == "male" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("A Male person '%s' can not have husband", people[0].Name)})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"husband": people[0]})
+}
+
+func (s *Server) GetWife(c *gin.Context) {
+	person := &Person{ID: c.Param("id")}
+	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.ID)
+
+	people, err := s.gclient.SearchPerson(query)
+	if err != nil {
+		s.logger.Fatal(err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+	if people[0].Gender == "female" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("A Female person '%s' can not have wife", people[0].Name)})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"wife": people[0]})
 }
 
 func (s *Server) GetFather(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(QUERY_FATHER, person.UID)
+	person := &Person{ID: c.Param("id")}
+	query := fmt.Sprintf(QUERY_FATHER, person.ID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
 		s.logger.Fatal(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	if len(people) > 0 {
-		c.JSON(http.StatusOK, people[0])
-	} else {
-		c.JSON(http.StatusOK, people)
-	}
+	c.JSON(http.StatusOK, gin.H{"father": people[0].Father})
 }
 
 func (s *Server) GetMother(c *gin.Context) {
-	person := &Person{UID: c.Param("uid")}
-	query := fmt.Sprintf(QUERY_MOTHER, person.UID)
+	person := &Person{ID: c.Param("id")}
+	query := fmt.Sprintf(QUERY_MOTHER, person.ID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
 		s.logger.Fatal(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	if len(people) > 0 {
-		c.JSON(http.StatusOK, people[0])
-	} else {
-		c.JSON(http.StatusOK, people)
-	}
+	c.JSON(http.StatusOK, gin.H{"mother": people[0].Mother})
 }
 
 // UpdatePerson godoc
 // @Summary UpdatePerson
-// @Description Update person's details like father, mother or partners by post data, uid of a person is required in url path
+// @Description Update person's details like father, mother or partners by post data, id of a person is required in url path
 // @Tags Person
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{uid}/ [patch]
-// @Param uid path string true "uid"
+// @Router /{id}/ [patch]
+// @Param id path string true "id"
 // @Param person body Person true "json data"
 func (s *Server) UpdatePerson(c *gin.Context) {
 	patchPerson := c.MustGet("person").(*Person)
-	patchPerson.UID = c.Param("uid")
+	patchPerson.ID = c.Param("id")
 	err := s.gclient.UpdatePerson(patchPerson)
 	if err != nil {
 		s.logger.Fatal(err.Error())
@@ -134,6 +150,18 @@ func (s *Server) UpdatePerson(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, patchPerson)
 }
+
+// func (s *Server) UpdatePartners(c *gin.Context) {
+// 	patchPerson := c.MustGet("person").(*Person)
+// 	patchPerson.id = c.Param("id")
+// 	err := s.gclient.UpdatePartners(patchPerson)
+// 	if err != nil {
+// 		s.logger.Fatal(err.Error())
+// 		c.AbortWithStatus(http.StatusBadRequest)
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, patchPerson)
+// }
 
 // CreatePerson godoc
 // @Summary CreatePerson
@@ -152,6 +180,16 @@ func (s *Server) CreatePerson(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, person)
+}
+
+func (s *Server) DeletePerson(c *gin.Context) {
+	id := c.Param("id")
+	if err := s.gclient.DeletePerson(id); err != nil {
+		s.logger.Fatal(err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("Person with id %s has been deleted", id)})
 }
 
 // SearchPerson godoc
@@ -196,7 +234,28 @@ func (s *Server) GetAllPeople(c *gin.Context) {
 func (s *Server) GetAllPeopleNetwork(c *gin.Context) {
 	data, err := s.gclient.GetPropleNetwork(QUERY_ALL_NETWORK_FORMAT)
 	links := append(data["mothers"], data["fathers"]...)
-	links = append(links, data["partners"]...)
+	links = append(links, data["wife"]...)
+	links = append(links, data["husband"]...)
+	peopleNetwork := map[string][]map[string]string{"nodes": data["nodes"], "links": links}
+	if err != nil {
+		s.logger.Fatal(err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": peopleNetwork})
+}
+
+func (s *Server) GetPersonNetwork(c *gin.Context) {
+	id := c.Param("id")
+	query := fmt.Sprintf(QUERY_PERSON_NETWORK_FORMAT, id, id, id, id, id, id, id, id, id, id, id, id, id, id, id)
+	data, err := s.gclient.GetPropleNetwork(query)
+	links := append(data["mothers"], data["fathers"]...)
+	links = append(links, data["wife"]...)
+	links = append(links, data["husband"]...)
+	links = append(links, data["fsons"]...)
+	links = append(links, data["fdaughters"]...)
+	links = append(links, data["msons"]...)
+	links = append(links, data["mdaughters"]...)
 	peopleNetwork := map[string][]map[string]string{"nodes": data["nodes"], "links": links}
 	if err != nil {
 		s.logger.Fatal(err.Error())

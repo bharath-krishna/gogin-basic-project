@@ -1,13 +1,15 @@
 type Person {
   name
-  partner
+  wife
+  husband
   father
   mother
   gender
 }
 
 name: string @index(term) .
-partner: [uid] @reverse .
+wife: [uid] @reverse .
+husband: [uid] @reverse .
 father: uid @reverse .
 mother: uid @reverse .
 gender: string @index(term) .

@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (c *Client) GetUID(p *Person) (map[string]string, error) {
+func (c *Client) GetID(p *Person) (map[string]string, error) {
 
 	q := `query all($a: string) {
 		all(func: eq(name, $a)) {
