@@ -249,6 +249,18 @@ func (s *Server) GetPersonNetwork(c *gin.Context) {
 	id := c.Param("id")
 	query := fmt.Sprintf(QUERY_PERSON_NETWORK_FORMAT, id, id, id, id, id, id, id, id, id, id, id, id, id, id, id)
 	data, err := s.gclient.GetPropleNetwork(query)
+
+	// fathers := []map[string]string{}
+	// for _, father := range data["fathers"] {
+	// 	father["relation"] = "father"
+	// 	fathers = append(fathers, father)
+	// }
+	// fsons := []map[string]string{}
+	// for _, fson := range data["fsons"] {
+	// 	fson["relation"] = "father"
+	// 	fathers = append(fsons, fson)
+	// }
+
 	links := append(data["mothers"], data["fathers"]...)
 	links = append(links, data["wife"]...)
 	links = append(links, data["husband"]...)

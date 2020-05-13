@@ -165,26 +165,34 @@ var (
 		}
 		fathers(func: has(name)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  father {
 			target: uid
+			tname: name
 		  }
 		}
 		mothers(func: has(name)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  mother {
 			target: uid
+			tname: name
 		  }
 		}
 		wife(func: has(name)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  husband {
 			target: uid
+			tname: name
 		  }
 		}
 		husband(func: has(name)) @cascade @normalize {
 			source: uid
+			sname: name
 			wife {
 			  target: uid
+			  tname: name
 			}
 		  }
 	  }`
@@ -196,50 +204,66 @@ var (
 		}
 		fathers(func: uid(%s)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  father {
-		  target: uid
+			target: uid
+			tname: name
 		  }
 		}
 		mothers(func: uid(%s)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  mother {
 		    target: uid
+			tname: name
 		  }
 		}
 		wife(func: uid(%s)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  husband {
 		    target: uid
+			tname: name
 		  }
 		}
 		husband(func: uid(%s)) @cascade @normalize {
 		  source: uid
+		  sname: name
 		  wife {
 			target: uid
+			tname: name
 		  }
 		}
 		fsons(func: uid(%s)) @cascade @normalize {
           source: uid
+		  sname: name
           ~father @filter(eq(gender, "male")) {
             target: uid
+			tname: name
           }
         }
 		msons(func: uid(%s)) @cascade @normalize {
             source: uid
+			sname: name
             ~mother @filter(eq(gender, "male")) {
               target: uid
+			  tname: name
             }
           }
           fdaughters(func: uid(%s)) @cascade @normalize {
             source: uid
+			sname: name
             ~father @filter(eq(gender, "female")) {
               target: uid
+			  tname: name
             }
           }
           mdaughters(func: uid(%s)) @cascade @normalize {
             source: uid
+			sname: name
             ~mother @filter(eq(gender, "female")) {
-              target: uid
+			  target: uid
+			  tname: name
             }
           }
         }`
