@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -25,7 +28,7 @@ func (s *Server) LoggingMiddleware() gin.HandlerFunc {
 
 func (s *Server) AllowOriginRequests() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", c.GetHeader("Origin"))
+		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
 		c.Header("Allow", "HEAD,GET,POST,PUT,PATCH,DELETE,OPTIONS")
@@ -35,5 +38,31 @@ func (s *Server) AllowOriginRequests() gin.HandlerFunc {
 		} else {
 			c.Next()
 		}
+	}
+}
+
+func (s *Server) FetchPerson() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		person, err := getBody(c)
+		if err != nil {
+			fmt.Printf("********************%+v********************\n", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+		} else {
+			c.Set("person", person)
+			c.Next()
+		}
+	}
+}
+
+func getBody(c *gin.Context) (*Person, error) {
+	reqData := &Person{}
+	if profBytes, err := ioutil.ReadAll(c.Request.Body); err == nil {
+		if err := json.Unmarshal(profBytes, reqData); err == nil {
+			return reqData, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, err
 	}
 }
