@@ -34,35 +34,22 @@ spec:
       }
     }
 
-    stage ("test_run") {
+    stage ("Build") {
       steps {
         container('docker') {
-          // Create test pod and sleep untill ready and then run tests
-          sh """
-            kubectl get po
-            docerk ps -a
-          """
+          script {
+            withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+              sh """
+                docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+                docker build -t $JOB_NAME:$BUILD_NUMBER .
+                docker tag $JOB_NAME:$BUILD_NUMBER docker.io/krishbharath/$JOB_NAME:$BUILD_NUMBER
+                docker push docker.io/krishbharath/$JOB_NAME:$BUILD_NUMBER
+              """
+            }
+          }
         }
       }
     }
-
-
-
-
-    // Push production image if above tests passes
-    // stage ("Push") {
-    //   steps {
-    //     container('docker') {
-    //       script {
-    //         // Build image only if the above stages succeeds
-    //         sh """
-    //           docker push krishbharath/mkdocs_image
-    //         """
-    //       }
-    //     }
-    //   }
-    // }
-
 
   }
 }
