@@ -22,12 +22,12 @@ type Config struct {
 
 func NewDefaultConfig() *Config {
 	return &Config{
-		ServerAddr:    os.Getenv("ADDRESS"),
-		KeycloakRealm: os.Getenv("KEYCLOAK_REALM"),
-		ClientID:      os.Getenv("CLIENT_ID"),
-		ClientSecret:  os.Getenv("CLIENT_SECRET"),
-		AuthHost:      os.Getenv("AUTH_HOST"),
-		DgraphHost:    os.Getenv("DGRAPH_HOST"),
+		ServerAddr:    os.Getenv("FAMILY_ADDRESS"),
+		KeycloakRealm: os.Getenv("FAMILY_KEYCLOAK_REALM"),
+		ClientID:      os.Getenv("FAMILY_CLIENT_ID"),
+		ClientSecret:  os.Getenv("FAMILY_CLIENT_SECRET"),
+		AuthHost:      os.Getenv("FAMILY_AUTH_HOST"),
+		DgraphHost:    os.Getenv("FAMILY_DGRAPH_HOST"),
 	}
 }
 

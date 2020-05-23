@@ -5,7 +5,7 @@ var (
 )
 
 const (
-	prog        = "app-name"
-	description = "this is the app"
-	envPrefix   = "SomePrifixAppName_"
+	prog        = "FAMILY_TREE"
+	description = "Family tree application"
+	envPrefix   = "FAMILY_TREE_"
 )

@@ -11,7 +11,7 @@ import (
 
 type Person struct {
 	Name      string    `json:"name"`
-	ID        string    `json:"id,omitempty"`
+	UID       string    `json:"uid,omitempty"`
 	Father    *Person   `json:"father,omitempty"`
 	Mother    *Person   `json:"mother,omitempty"`
 	Sons      []*Person `json:"sons,omitempty"`
@@ -47,50 +47,52 @@ var (
 
 	SEARCH_QUERY_BY_NAME = `{
 		person(func: eq(name, "%s")) {
-		  id: uid
+		  uid
 		  name
 		  wife {
-			  id: uid 
+			  uid 
 			  name
 			  gender
 		  }
 		  husband {
-			  id: uid 
+			  uid 
 			  name
 			  gender
 		  }
 		  father {
+			  uid
 			  name
 			  gender
 		  }
 		  mother {
+			  uid
 			  name
 			  gender
 		  }
 		  gender
 		}
 	  }`
-	SEARCH_QUERY_BY_ID = `{
+	SEARCH_QUERY_BY_UID = `{
 		person(func: uid(%s)) {
-		  id: uid
+		  uid
 		  name
 		  wife {
-			  id: uid
+			  uid
 			  name
 			  gender
 		  }
 		  husband {
-			  id: uid
+			  uid
 			  name
 			  gender
 		  }
 		  father {
-			  id: uid
+			  uid
 			  name
 			  gender
 		  }
 		  mother {
-			  id: uid
+			  uid
 			  name
 			  gender
 		  }
@@ -99,30 +101,30 @@ var (
 	  }`
 	QUERY_CHILDREN = `{
 		person(func: uid(%s)) {
-			id: uid
+			uid
 			name
 			sons: ~%s @filter(eq(gender, "male")) {
-				id: uid
+				uid
 				name
 			}
 			daughters: ~%s @filter(eq(gender, "female")) {
-				id: uid
+				uid
 				name
 			}
 		}
 	}`
 	QUERY_HUSBAND_OR_WIFE = `{
 		person(func: uid(%s)) {
-			id: uid
+			uid
 			name
 			gender
 			wife {
-				id: uid
+				uid
 				name
 				gender
 			}
 			husband {
-				id: uid
+				uid
 				name
 				gender
 			}
@@ -130,11 +132,11 @@ var (
 	}`
 	QUERY_FATHER = `{
 		person(func: uid(%s)) {
-			id: uid
+			uid
 			name
 			gender
 			father {
-				id: uid
+				uid
 				name
 				gender
 			}
@@ -142,11 +144,11 @@ var (
 	}`
 	QUERY_MOTHER = `{
 		person(func: uid(%s)) {
-			id: uid
+			uid
 			name
 			gender
 			mother {
-				id: uid
+				uid
 				name
 				gender
 			}
@@ -154,13 +156,13 @@ var (
 	}`
 	QUERY_ALL = `{
 		person(func: has(name)) @recurse(depth: 2, loop: true) {
-			id: uid
+			uid
 			expand(_all_)
 		}
 	}`
 	QUERY_ALL_NETWORK_FORMAT = `{
 		nodes(func: has(name)) {
-		  id: uid
+		  uid
 		  expand(_all_)
 		}
 		fathers(func: has(name)) @cascade @normalize {
@@ -198,7 +200,7 @@ var (
 	  }`
 	QUERY_PERSON_NETWORK_FORMAT = `{
 		nodes(func: has(name)) @filter(uid_in(~father, %s) OR uid_in(father, %s) OR uid_in(mother, %s) OR uid_in(~wife, %s) OR uid_in(~mother, %s) OR uid_in(~husband, %s) OR uid(%s)) {
-		  id: uid
+		  uid
           name
           gender
 		}
@@ -291,9 +293,9 @@ func (c *Client) CreatePerson(p *Person) error {
 	return nil
 }
 
-func (c *Client) DeletePerson(id string) error {
+func (c *Client) DeletePerson(uid string) error {
 	p := &Person{}
-	p.ID = id
+	p.UID = uid
 	p.DType = []string{"Person"}
 	ctx := context.Background()
 	txn := c.dgraph.NewTxn()
@@ -302,7 +304,7 @@ func (c *Client) DeletePerson(id string) error {
 	// Upsert query
 	// upsert {
 	// 	query {
-	// 	  p as node(func: id(0x7566)){
+	// 	  p as node(func: uid(0x7566)){
 	// 		h as ~husband
 	// 		w as ~wife
 	// 		f as ~father
@@ -328,7 +330,7 @@ func (c *Client) DeletePerson(id string) error {
 			f as ~father
 			m as ~mother	  
 		}
-	}`, id)
+	}`, uid)
 
 	mu := &api.Mutation{
 		DelNquads: []byte(`

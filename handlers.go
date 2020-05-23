@@ -14,11 +14,11 @@ import (
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{id}/ [get]
-// @Param id path string true "id"
+// @Router /{uid}/ [get]
+// @Param uid path string true "uid"
 func (s *Server) GetPerson(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
-	query := fmt.Sprintf(SEARCH_QUERY_BY_ID, person.ID)
+	person := &Person{UID: c.Param("uid")}
+	query := fmt.Sprintf(SEARCH_QUERY_BY_UID, person.UID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -35,12 +35,12 @@ func (s *Server) GetPerson(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{id}/children/ [get]
-// @Param id path string true "id"
+// @Router /{uid}/children/ [get]
+// @Param uid path string true "uid"
 func (s *Server) GetChildren(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
+	person := &Person{UID: c.Param("uid")}
 
-	personQuery := fmt.Sprintf(SEARCH_QUERY_BY_ID, person.ID)
+	personQuery := fmt.Sprintf(SEARCH_QUERY_BY_UID, person.UID)
 
 	querPerson, err := s.gclient.SearchPerson(personQuery)
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *Server) GetChildren(c *gin.Context) {
 		parent = "father"
 	}
 
-	query := fmt.Sprintf(QUERY_CHILDREN, person.ID, parent, parent)
+	query := fmt.Sprintf(QUERY_CHILDREN, person.UID, parent, parent)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -74,8 +74,8 @@ func (s *Server) GetChildren(c *gin.Context) {
 }
 
 func (s *Server) GetHusband(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
-	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.ID)
+	person := &Person{UID: c.Param("uid")}
+	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.UID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -90,8 +90,8 @@ func (s *Server) GetHusband(c *gin.Context) {
 }
 
 func (s *Server) GetWife(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
-	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.ID)
+	person := &Person{UID: c.Param("uid")}
+	query := fmt.Sprintf(QUERY_HUSBAND_OR_WIFE, person.UID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -106,8 +106,8 @@ func (s *Server) GetWife(c *gin.Context) {
 }
 
 func (s *Server) GetFather(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
-	query := fmt.Sprintf(QUERY_FATHER, person.ID)
+	person := &Person{UID: c.Param("uid")}
+	query := fmt.Sprintf(QUERY_FATHER, person.UID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -118,8 +118,8 @@ func (s *Server) GetFather(c *gin.Context) {
 }
 
 func (s *Server) GetMother(c *gin.Context) {
-	person := &Person{ID: c.Param("id")}
-	query := fmt.Sprintf(QUERY_MOTHER, person.ID)
+	person := &Person{UID: c.Param("uid")}
+	query := fmt.Sprintf(QUERY_MOTHER, person.UID)
 
 	people, err := s.gclient.SearchPerson(query)
 	if err != nil {
@@ -131,17 +131,17 @@ func (s *Server) GetMother(c *gin.Context) {
 
 // UpdatePerson godoc
 // @Summary UpdatePerson
-// @Description Update person's details like father, mother or partners by post data, id of a person is required in url path
+// @Description Update person's details like father, mother or partners by post data, uid of a person is required in url path
 // @Tags Person
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} Person
-// @Router /{id}/ [patch]
-// @Param id path string true "id"
+// @Router /{uid}/ [patch]
+// @Param uid path string true "uid"
 // @Param person body Person true "json data"
 func (s *Server) UpdatePerson(c *gin.Context) {
 	patchPerson := c.MustGet("person").(*Person)
-	patchPerson.ID = c.Param("id")
+	patchPerson.UID = c.Param("uid")
 	err := s.gclient.UpdatePerson(patchPerson)
 	if err != nil {
 		s.logger.Fatal(err.Error())
@@ -153,7 +153,7 @@ func (s *Server) UpdatePerson(c *gin.Context) {
 
 // func (s *Server) UpdatePartners(c *gin.Context) {
 // 	patchPerson := c.MustGet("person").(*Person)
-// 	patchPerson.id = c.Param("id")
+// 	patchPerson.uid = c.Param("uid")
 // 	err := s.gclient.UpdatePartners(patchPerson)
 // 	if err != nil {
 // 		s.logger.Fatal(err.Error())
@@ -183,13 +183,13 @@ func (s *Server) CreatePerson(c *gin.Context) {
 }
 
 func (s *Server) DeletePerson(c *gin.Context) {
-	id := c.Param("id")
-	if err := s.gclient.DeletePerson(id); err != nil {
+	uid := c.Param("uid")
+	if err := s.gclient.DeletePerson(uid); err != nil {
 		s.logger.Fatal(err.Error())
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("Person with id %s has been deleted", id)})
+	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("Person with uid %s has been deleted", uid)})
 }
 
 // SearchPerson godoc
@@ -246,8 +246,8 @@ func (s *Server) GetAllPeopleNetwork(c *gin.Context) {
 }
 
 func (s *Server) GetPersonNetwork(c *gin.Context) {
-	id := c.Param("id")
-	query := fmt.Sprintf(QUERY_PERSON_NETWORK_FORMAT, id, id, id, id, id, id, id, id, id, id, id, id, id, id, id)
+	uid := c.Param("uid")
+	query := fmt.Sprintf(QUERY_PERSON_NETWORK_FORMAT, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid, uid)
 	data, err := s.gclient.GetPropleNetwork(query)
 
 	// fathers := []map[string]string{}
