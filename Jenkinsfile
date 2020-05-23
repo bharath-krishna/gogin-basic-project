@@ -1,3 +1,4 @@
+IMAGE="ImageName"
 pipeline {
   agent {
     // Using kubernetes cloud to create jenkins agent
@@ -30,6 +31,11 @@ spec:
         container('docker') {
           // chekout mkdocs repo
           checkout scm
+
+          script {
+            def gitCommitTag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+            IMAGE = "docker.io/krishbharath/$JOB_NAME:$gitCommitTag"
+          }
         }
       }
     }
@@ -41,9 +47,8 @@ spec:
             withCredentials([usernamePassword(credentialsId: 'docker_hub_creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
               sh """
                 docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
-                docker build -t $JOB_NAME:$BUILD_NUMBER .
-                docker tag $JOB_NAME:$BUILD_NUMBER docker.io/krishbharath/$JOB_NAME:$BUILD_NUMBER
-                docker push docker.io/krishbharath/$JOB_NAME:$BUILD_NUMBER
+                docker build -t $IMAGE .
+                docker push $IMAGE
               """
             }
           }
