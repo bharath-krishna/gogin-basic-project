@@ -68,7 +68,7 @@ spec:
       steps {
         container('docker') {
           script {
-            withCredentials([usernamePassword(credentialsId: 'kubernetes_client_data', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')]) {
+            withCredentials([usernamePassword(credentialsId: 'keycloak_client_data', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')]) {
               dir("k8s/${params.ENVIRONMENT}") {
                 sh """
                   kustomize edit add label tier:backend
