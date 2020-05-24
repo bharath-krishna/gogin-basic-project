@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: family-tree
+  name: family-tree-backend
   namespace: default
 spec:
   rules:
@@ -9,6 +9,6 @@ spec:
       http:
         paths:
           - backend:
-              serviceName: family-tree
+              serviceName: family-tree-backend
               servicePort: 8088
             path: /

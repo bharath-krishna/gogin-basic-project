@@ -7,7 +7,7 @@ pipeline {
       yaml """
 spec:
   containers:
-  - image: "krishbharath/jenkins-slave:triad"
+  - image: "krishbharath/jenkins-slave:kustomize"
     imagePullPolicy: Always
     name: "docker"
     command:
@@ -55,6 +55,27 @@ spec:
         }
       }
     }
+
+    stage ("Deploy") {
+      steps {
+        container('docker') {
+          script {
+            withCredentials([usernamePassword(credentialsId: 'kubernetes_client_data', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')]) {
+              dir("k8s/dev") {
+                sh """
+                  kustomize edit add label tier:backend
+                  kustomize edit add secret $JOB_NAME --from-literal=client_id=$CLIENT_ID --from-literal=client_secret=$CLIENT_SECRET
+                  kustomize edit set image docker.io/krishbharath/family-tree-backend=$IMAGE
+                  kustomize build > resource.yaml
+                  kubectl apply -f resource.yaml
+                """
+              }
+            }
+          }
+        }
+      }
+    }
+
 
   }
 }

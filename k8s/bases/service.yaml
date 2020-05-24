@@ -3,15 +3,15 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: family-tree
-  name: family-tree
+    app: family-tree-backend
+  name: family-tree-backend
 spec:
   ports:
   - port: 8088
     protocol: TCP
     targetPort: 8088
   selector:
-    app: family-tree
+    app: family-tree-backend
   type: NodePort
 status:
   loadBalancer: {}
