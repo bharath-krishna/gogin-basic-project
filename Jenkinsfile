@@ -30,9 +30,9 @@ spec:
     string(name: 'APP_NAME', defaultValue: 'family-tree-backend', description: 'Application name')
     booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Deploy application')
   }
-  environment {
-    // K8S_TOKEN = credentials("k8s-default-token")
-  }
+  // environment {
+  //   K8S_TOKEN = credentials("k8s-default-token")
+  // }
   stages {
     stage ("Checkout") {
       steps {
