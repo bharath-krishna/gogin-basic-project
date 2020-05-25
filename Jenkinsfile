@@ -76,6 +76,7 @@ spec:
                   kustomize edit set image docker.io/krishbharath/family-tree-backend=$IMAGE
                   kustomize build > resource.yaml
                   kubectl apply -f resource.yaml
+                  kubectl apply -f ingress.yaml
                 """
               }
             }
