@@ -49,7 +49,6 @@ spec:
     }
 
     stage ("Build") {
-      when { expression { env.BUILD == 'true' } }
       steps {
         container('docker') {
           script {
