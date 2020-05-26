@@ -28,6 +28,7 @@ spec:
   parameters {
     choice(name: 'ENVIRONMENT', choices: ['prod', 'qa', 'dev'], description: 'Environment Ex. prod, dev, qa...')
     string(name: 'APP_NAME', defaultValue: 'family-tree-backend', description: 'Application name')
+    booleanParam(name: 'BUILD', defaultValue: false, description: 'Build Image')
     booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Deploy application')
   }
   // environment {
@@ -48,6 +49,7 @@ spec:
     }
 
     stage ("Build") {
+      when { expression { env.BUILD == 'true' } }
       steps {
         container('docker') {
           script {
