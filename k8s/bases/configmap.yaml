@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  address: 0.0.0.0:8088
+  authhost: http://vpshost.info
+  dgraphhost: 192.168.99.1:9080
+  keycloak-realm: roc
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: family-tree-backend

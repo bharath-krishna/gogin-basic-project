@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: family-tree-backend
+  name: family-tree-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: family-tree-backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: family-tree-backend
+    spec:
+      containers:
+      - image: docker.io/krishbharath/family-tree-backend
+        args:
+        - --verbose
+        env:
+        - name: FAMILY_TREE_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              key: address
+              name: family-tree-backend
+        - name: FAMILY_TREE_DGRAPH_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: dgraphhost
+              name: family-tree-backend
+        - name: FAMILY_TREE_AUTH_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: authhost
+              name: family-tree-backend
+        - name: FAMILY_TREE_KEYCLOAK_REALM
+          valueFrom:
+            configMapKeyRef:
+              key: keycloak-realm
+              name: family-tree-backend
+        - name: FAMILY_TREE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: client_id
+              name: family-tree-backend
+        - name: FAMILY_TREE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: client_id
+              name: family-tree-backend
+        name: family-tree-backend
+        resources: {}
+status: {}

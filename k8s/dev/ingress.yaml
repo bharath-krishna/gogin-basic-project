@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: family-tree-backend
+  namespace: default
+spec:
+  rules:
+    - host: tree.vpshost.info
+      http:
+        paths:
+          - backend:
+              serviceName: family-tree-backend
+              servicePort: 8088
+            path: /
