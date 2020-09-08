@@ -1,0 +1,55 @@
+{
+  set {
+    _:bharath <dgraph.type> "Person" .
+    _:bharath <name> "bharath" .
+    _:bharath <wife> _:chaitra .
+    _:bharath <father> _:krishna .
+    _:bharath <mother> _:shivamma .
+    _:bharath <gender> "male" .
+
+    _:sanjay <dgraph.type> "Person" .
+    _:sanjay <name> "sanjay" .
+    _:sanjay <father> _:krishna .
+    _:sanjay <mother> _:shivamma .
+    _:sanjay <gender> "male" .
+
+    _:anitha <dgraph.type> "Person" .
+    _:anitha <name> "anitha" .
+    _:anitha <father> _:krishna .
+    _:anitha <mother> _:shivamma .
+    _:anitha <gender> "female" .
+
+    _:prathima <dgraph.type> "Person" .
+    _:prathima <name> "prathima" .
+    _:prathima <father> _:krishna .
+    _:prathima <mother> _:shivamma .
+    _:prathima <gender> "female" .
+
+    _:chaitra <dgraph.type> "Person" .
+    _:chaitra <name> "chaitra" .
+    _:chaitra <husband> _:bharath .
+    _:chaitra <father> _:neelakantappa .
+    _:chaitra <mother> _:shashikala .
+    _:chaitra <gender> "female" .
+
+    _:krishna <dgraph.type> "Person" .
+    _:krishna <name> "krishna" .
+    _:krishna <wife> _:shivamma .
+    _:krishna <gender> "male" .
+
+    _:shivamma <dgraph.type> "Person" .
+    _:shivamma <name> "shivamma" .
+    _:shivamma <husband> _:krishna .
+    _:shivamma <gender> "female" .
+
+    _:neelakantappa <dgraph.type> "Person" .
+    _:neelakantappa <name> "neelakantappa" .
+    _:neelakantappa <wife> _:shashikala .
+    _:neelakantappa <gender> "male" .
+
+    _:shashikala <dgraph.type> "Person" .
+    _:shashikala <name> "shashikala" .
+    _:shashikala <husband> _:neelakantappa .
+    _:shashikala <gender> "female" .
+  }
+}

@@ -1,0 +1,148 @@
+get person's sons and daughters
+{
+  person(func: has(name)) @filter(eq(name, "krishna")) {
+    name
+    sons: ~father @filter(eq(gender, "male")) {
+      name
+    }
+    daughters: ~father @filter(eq(gender, "female")) {
+      name
+    }
+  }
+}
+
+
+search person
+{
+  person(func: anyofterms(name, "prathima")) {
+    uid
+    name
+    father {
+      name
+    }
+    partner {
+      name
+    }
+    mother {
+      name
+    }
+    gender
+  }
+}
+
+
+get everything (only two levels of queries are enough)
+{
+  expand(func: has(name)) {
+    expand(_all_) {
+      expand(_all_) {
+        expand(_all_)
+      }
+    }
+  }
+}
+
+
+Create edge between nodes
+upsert {
+    query {
+    var(func: eq(name, "krishna")) {
+        krishna as uid
+    }
+    var(func: eq(name, "narasappa")) {
+        narasappa as uid
+    }
+    }
+    mutation {
+        set {
+        uid(krishna) <father> uid(narasappa) .
+        }
+    }
+}
+
+
+Delete a node
+{
+  delete {
+    <0xfffd8d67d8321d7d> <dgraph.type> * .
+  }
+}
+
+
+Create a node
+{
+  set {
+    _:suchitra <dgraph.type> "Person" .
+    _:suchitra <name> "suchitra" .
+    _:suchitra <mother> uid(shashikala) .
+    _:suchitra <father> uid(neelakantappa) .
+    _:suchitra <gender> "female" .
+  }
+}
+
+
+search nodes, create new node and create an edge between searched nodes and new node
+upsert {
+    query {
+    var(func: eq(name, "krishna")) {
+        krishna as uid
+    }
+    }
+    mutation {
+      set {
+        _:narasappa <dgraph.type> "Person" .
+        _:narasappa <name> "narasappa" .
+        _:narasappa <gender> "male" .
+        uid(krishna) <father> _:narasappa .
+      }
+    }
+}
+
+or 
+
+upsert {
+    query {
+    var(func: eq(name, "neelakantappa")) {
+        neelakantappa as uid
+    }
+    var(func: eq(name, "shashikala")) {
+        shashikala as uid
+    }
+    }
+    mutation {
+      set {
+        _:suchitra <dgraph.type> "Person" .
+        _:suchitra <name> "suchitra" .
+        _:suchitra <mother> uid(shashikala) .
+        _:suchitra <father> uid(neelakantappa) .
+        _:suchitra <gender> "female" .
+      }
+    }
+}
+
+
+Get all for graph network
+{
+  nodes(func: has(name)) {
+    id: uid
+    expand(_all_)
+  }
+  fathers(func: has(name)) @cascade @normalize {
+    source: uid
+    father {
+      target: uid
+    }
+  }
+  mothers(func: has(name)) @cascade @normalize {
+    source: uid
+    mother {
+      target: uid
+    }
+  }
+  partners(func: has(name)) @cascade @normalize {
+    source: uid
+    partner {
+      target: uid
+    }
+  }
+}

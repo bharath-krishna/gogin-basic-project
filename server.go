@@ -1,14 +1,21 @@
 package main
 
 import (
+	"os"
+
+	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"golang.org/x/oauth2"
 )
 
 type Server struct {
-	config *Config
-	app    *gin.Engine
-	logger *zap.Logger
+	O2Config oauth2.Config
+	provider *oidc.Provider
+	gclient  *Client
+	config   *Config
+	app      *gin.Engine
+	logger   *zap.Logger
 }
 
 func createNewServer(config *Config) (*Server, error) {
@@ -19,9 +26,31 @@ func createNewServer(config *Config) (*Server, error) {
 
 	logger.Info("Starting the service", zap.String("prog", prog), zap.String("version", version))
 
+	provider, err := oidc.NewProvider(oauth2.NoContext, config.AuthHost+"/auth/realms/demo")
+	if err != nil {
+		panic(err)
+	}
+	config.Provider = provider
+
+	// For three legged authentication flow
+	o2Config := oauth2.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		RedirectURL:  os.Getenv("CALLBACK_URL"),
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{"profile", "email"},
+	}
+
+	gclient, err := GetNewGraphClient(logger, config)
+	if err != nil {
+		return nil, err
+	}
 	s := &Server{
-		logger: logger,
-		config: config,
+		O2Config: o2Config,
+		gclient:  gclient,
+		logger:   logger,
+		provider: config.Provider,
+		config:   config,
 	}
 
 	s.app = s.setupRoutes()
