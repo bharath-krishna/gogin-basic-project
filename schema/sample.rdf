@@ -1,5 +1,7 @@
 type Person {
   name
+  email
+  kcid
   wife
   husband
   father
@@ -8,6 +10,8 @@ type Person {
 }
 
 name: string @index(term) .
+email: string @index(term) .
+kcid: string @index(term) .
 wife: [uid] @reverse .
 husband: [uid] @reverse .
 father: uid @reverse .

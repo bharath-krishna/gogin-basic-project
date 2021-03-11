@@ -2,6 +2,8 @@
   set {
     _:bharath <dgraph.type> "Person" .
     _:bharath <name> "bharath" .
+    _:bharath <kcid> "8ed54274-dc4e-4e1a-814c-1880b3cf4a81" .
+    _:bharath <email> "bharath.chakravarthi@gmail.com" .
     _:bharath <wife> _:chaitra .
     _:bharath <father> _:krishna .
     _:bharath <mother> _:shivamma .

@@ -1,0 +1,104 @@
+apiVersion: v1
+data:
+  address: 0.0.0.0:8088
+  authhost: http://vpshost.info
+  dgraphhost: 192.168.99.1:9080
+  keycloak-realm: roc
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    tier: backend
+  name: family-tree-backend
+---
+apiVersion: v1
+data:
+  client_id: ZGVtby1jbGllbnQ=
+  client_secret: ZTRlOWY1MTgtZmQxOS00ZTRlLTk3MzgtOTU0Yjg0NmI3Y2Rh
+kind: Secret
+metadata:
+  labels:
+    tier: backend
+  name: family-tree-backend
+type: Opaque
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: family-tree-backend
+    tier: backend
+  name: family-tree-backend
+spec:
+  ports:
+  - port: 8088
+    protocol: TCP
+    targetPort: 8088
+  selector:
+    app: family-tree-backend
+    tier: backend
+  type: NodePort
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: family-tree-backend
+    tier: backend
+  name: family-tree-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: family-tree-backend
+      tier: backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: family-tree-backend
+        tier: backend
+    spec:
+      containers:
+      - args:
+        - --verbose
+        env:
+        - name: FAMILY_TREE_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              key: address
+              name: family-tree-backend
+        - name: FAMILY_TREE_DGRAPH_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: dgraphhost
+              name: family-tree-backend
+        - name: FAMILY_TREE_AUTH_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: authhost
+              name: family-tree-backend
+        - name: FAMILY_TREE_KEYCLOAK_REALM
+          valueFrom:
+            configMapKeyRef:
+              key: keycloak-realm
+              name: family-tree-backend
+        - name: FAMILY_TREE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: client_id
+              name: family-tree-backend
+        - name: FAMILY_TREE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: client_id
+              name: family-tree-backend
+        image: docker.io/krishbharath/family-tree-backend:44f7827
+        name: family-tree-backend
+        resources: {}
+status: {}

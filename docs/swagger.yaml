@@ -1,56 +1,187 @@
+basePath: /people
 definitions:
-  main.Welcome:
+  main.Person:
     properties:
-      id:
-        example: "1"
-        format: int64
+      daughters:
+        items:
+          $ref: '#/definitions/main.Person'
+        type: array
+      deceased:
+        type: boolean
+      deleted:
+        type: boolean
+      dgraph.type:
+        items:
+          type: string
+        type: array
+      father:
+        $ref: '#/definitions/main.Person'
+        type: object
+      gender:
         type: string
-    type: object
-  main.Welcome2:
-    properties:
+      husband:
+        items:
+          $ref: '#/definitions/main.Person'
+        type: array
+      mother:
+        $ref: '#/definitions/main.Person'
+        type: object
       name:
-        example: somename
-        format: string
         type: string
+      sons:
+        items:
+          $ref: '#/definitions/main.Person'
+        type: array
+      uid:
+        type: string
+      wife:
+        items:
+          $ref: '#/definitions/main.Person'
+        type: array
     type: object
+host: localhost:8088
 info:
-  contact: {}
-  license: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is api spec for family tree project.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Family tree apis
+  version: 3.0.0
 paths:
-  /welcome:
+  /:
     get:
       consumes:
       - application/json
-      description: This is the welcome page
+      description: Get all people data, this includes self and one level like parent's
+        and partner's data
       produces:
-      - application/json
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Welcome'
-      summary: welcome page
+            $ref: '#/definitions/main.Person'
+      summary: GetALlPeople
       tags:
-      - welcome
-  /welcome2:
+      - People
     post:
       consumes:
       - application/json
-      description: This is the welcome2 page
+      description: Create a new entry for a person object, you can mention any level
+        of father, mother or partners.
+      parameters:
+      - description: json data
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/main.Person'
       produces:
       - application/json
-      - text/plain
       responses:
         "200":
           description: OK
           schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/main.Welcome2'
-      summary: welcome2 page
+            $ref: '#/definitions/main.Person'
+      summary: CreatePerson
       tags:
-      - welcome2
+      - People
+  /{uid}/:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a person like father, mother and partners via id
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Person'
+      summary: GetPerson
+      tags:
+      - Person
+    patch:
+      consumes:
+      - application/json
+      description: Update person's details like father, mother or partners by post
+        data, uid of a person is required in url path
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: json data
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/main.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Person'
+      summary: UpdatePerson
+      tags:
+      - Person
+  /{uid}/children/:
+    get:
+      consumes:
+      - application/json
+      description: Get children's details of a person via id (only immediage children
+        are fetched)
+      parameters:
+      - description: uid
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Person'
+      summary: GetChildren
+      tags:
+      - Person
+  /search:
+    post:
+      consumes:
+      - application/json
+      description: Search for a person by the given fields, all the matching objects
+        will be returned as a list
+      parameters:
+      - description: json data
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/main.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Person'
+      summary: SearchPerson
+      tags:
+      - People
 swagger: "2.0"
